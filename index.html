@@ -3,290 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sunday Service Pro (Final Fix)</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>AI 智能人脸签到系统 (全功能版)</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --primary: #007bff; --family: #6f42c1; --danger: #dc3545; --success: #28a745; --warning: #ffc107; }
-        body { margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; background-image: url('bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; box-sizing: border-box; }
-        body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: -1; }
+        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --accent: #6f42c1; }
+        body { margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: 'Segoe UI', system-ui; background: #121212; color: #eee; }
         
-        .app-layout { display: flex; flex-direction: row; justify-content: center; align-items: flex-start; gap: 20px; width: 100%; max-width: 1200px; margin-top: 20px; }
-        @media (max-width: 950px) { .app-layout { flex-direction: column; align-items: center; } }
-        
-        .glass-card { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 20px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); width: 100%; max-width: 450px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.3); position: relative; }
-        
-        .title-container { text-align: center; margin-bottom: 15px; cursor: pointer; }
-        
-        /* 心情选择器 */
-        .mood-picker { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; font-size: 26px; }
-        .mood-item { cursor: pointer; padding: 5px; border-radius: 12px; transition: 0.3s; opacity: 0.35; }
-        .mood-item.active { opacity: 1; background: white; transform: scale(1.25); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #video-wrapper { position: relative; width: 100%; max-width: 500px; border-radius: 20px; overflow: hidden; border: 4px solid #333; background: #000; box-shadow: 0 15px 40px rgba(0,0,0,0.5); margin-bottom: 20px; }
+        video { width: 100%; height: auto; display: block; transform: scaleX(-1); }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-        .btn-success.submit-top { width: 100%; margin-bottom: 15px; font-weight: bold; background: var(--success); border: none; color: white; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); font-size: 18px; }
-
-        .input-group-wrapper { position: relative; width: 100%; }
-        .input-group { border: 2px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 10px; display: flex; flex-wrap: wrap; gap: 6px; background: #fff; min-height: 50px; align-items: center; }
-        .tag { background: var(--primary); color: white; padding: 4px 10px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 5px; }
-        #name-input { border: none; outline: none; flex: 1; min-width: 80px; font-size: 16px; background: transparent; }
+        .container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; width: 100%; max-width: 1100px; }
+        .card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); padding: 20px; border-radius: 24px; width: 340px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.1); position: relative; }
         
-        /* 下拉框样式修复 */
-        .dropdown { position: absolute; top: 100%; left: 0; width: 100%; background: white; border-radius: 12px; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 99999; margin-top: 5px; border: 1px solid #ddd; }
-        .dropdown.show { display: block; }
-        .dropdown-item { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        h3 { margin-top: 0; font-size: 17px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 8px; color: white; }
+        .btn-reg { background: var(--accent); }
+        .btn-checkin { background: var(--success); }
+        .btn-outline { background: transparent; border: 1px solid #555; color: #ccc; margin-top: 5px; }
+
+        .input-group { background: white; border-radius: 10px; padding: 8px; display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; min-height: 40px; align-items: center;}
+        #name-input { border: none; outline: none; flex: 1; min-width: 60px; font-size: 14px; color: #333; background: transparent; }
+        .tag { background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+        
+        /* 下拉搜索建议 */
+        .dropdown { position: absolute; top: 100%; left: 0; width: 100%; background: white; color: #333; border-radius: 10px; z-index: 1000; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.4); max-height: 200px; overflow-y: auto; }
+        .dropdown-item { padding: 10px 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; }
         .dropdown-item:hover { background: #f0f7ff; }
 
-        .tab-nav { display: flex; background: #eee; border-radius: 10px; padding: 3px; margin-bottom: 15px; }
-        .tab-nav button { flex: 1; border: none; background: transparent; padding: 8px; cursor: pointer; border-radius: 8px; font-size: 12px; font-weight: bold; }
-        .tab-nav button.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .log-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .del-btn { color: #555; cursor: pointer; font-size: 18px; padding: 0 5px; }
+        .del-btn:hover { color: var(--danger); }
 
-        .record-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 12px; margin-bottom: 8px; font-size: 14px; border: 1px solid rgba(0,0,0,0.05); }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        
-        .admin-lock { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 20px; opacity: 0.6; z-index: 10; }
-        .admin-lock.unlocked { color: var(--primary); opacity: 1; }
-
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:100000; }
-        .modal { background:white; padding:20px; border-radius:24px; width:90%; max-width:380px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-        .modal input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-        .clickable-name { cursor: pointer; text-decoration: underline; color: #333; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<input type="file" id="bg-upload" accept="image/*" style="display:none">
-<input type="file" id="import-upload" accept=".json" style="display:none">
+<div id="loader">
+    <div class="spinner"></div>
+    <div id="load-msg">🤖 正在唤醒 AI 引擎...</div>
+</div>
 
-<div class="app-layout">
-    <div class="glass-card">
-        <div class="title-container" onclick="editAppTitle()">
-            <h3 class="app-title" id="display-title">Sunday Service</h3>
-            <span style="font-size:11px; color:#777;">点击改标题 | 右键换背景</span>
-        </div>
-        <div class="mood-picker" id="mood-picker">
-            <span class="mood-item active" data-mood="😊">😊</span>
-            <span class="mood-item" data-mood="🙏">🙏</span>
-            <span class="mood-item" data-mood="🔥">🔥</span>
-            <span class="mood-item" data-mood="😴">😴</span>
-            <span class="mood-item" data-mood="💖">💖</span>
-        </div>
+<input type="file" id="face-import-input" accept=".json" style="display:none">
+<input type="file" id="image-upload-input" accept="image/*" style="display:none">
 
-        <button class="btn btn-success submit-top" id="submit-btn" onclick="doCheckIn()">确认提交 (0人)</button>
+<div id="video-wrapper">
+    <video id="video" autoplay muted playsinline></video>
+</div>
+
+<div class="container">
+    <!-- 1. 档案管理 -->
+    <div class="card">
+        <h3>📸 档案管理</h3>
+        <button class="btn btn-reg" onclick="registerFace()">📸 摄像头捕获录入</button>
+        <button class="btn btn-outline" onclick="document.getElementById('image-upload-input').click()">🖼️ 从图片导入人脸</button>
+        <div id="reg-status" style="margin-top:5px; font-size:11px; text-align:center;"></div>
         
-        <div class="input-group-wrapper">
-            <div class="input-group" id="input-area">
-                <div id="tag-container" style="display:contents"></div>
-                <input type="text" id="name-input" placeholder="输入姓名自动弹出..." autocomplete="off">
-            </div>
-            <div class="dropdown" id="dropdown-list"></div>
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap:5px;">
+            <button class="btn btn-outline" style="flex:1; font-size:11px;" onclick="exportFaceProfiles()">📤 导出</button>
+            <button class="btn btn-outline" style="flex:1; font-size:11px;" onclick="document.getElementById('face-import-input').click()">📥 导入</button>
         </div>
-
-        <button id="set-family-btn" class="btn" style="background:#f3ebff; color:var(--family); border:2px dashed var(--family); margin-top:10px; display:none;" onclick="saveFamily()">👨‍👩‍👧‍👦 设为家庭组</button>
     </div>
 
-    <!-- 右侧 -->
-    <div class="glass-card">
-        <div class="admin-lock" id="admin-lock-btn" onclick="handleLockClick()">🔒</div>
-        <div class="tab-nav">
-            <button id="tab-list" class="active" onclick="switchTab('list')">名单</button>
-            <button id="tab-stats" onclick="switchTab('stats')">统计</button>
-            <button id="tab-tools" onclick="switchTab('tools')">功能</button>
-        </div>
-        <div id="view-list">
-            <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-                <select class="btn" style="padding:8px; flex:1; font-size:13px; background:#fff; border:1px solid #ddd;" id="date-filter" onchange="renderHistoryList()"></select>
-                <div id="today-count" style="font-size:12px; color:var(--primary); font-weight:bold;">今日: 0人</div>
+    <!-- 2. 签到管理 (含家庭组) -->
+    <div class="card">
+        <h3>✅ 签到管理</h3>
+        <button class="btn btn-checkin" id="submit-btn" onclick="submitManualCheckIn()">确认提交 (0人)</button>
+        
+        <div class="input-group-wrapper" style="position:relative;">
+            <div class="input-group" id="input-area">
+                <div id="tag-container" style="display:contents"></div>
+                <input type="text" id="name-input" placeholder="输入姓名或家庭..." autocomplete="off">
             </div>
-            <div id="history-list" style="max-height:400px; overflow-y:auto;"></div>
+            <div id="dropdown" class="dropdown"></div>
         </div>
-        <div id="view-stats" style="display:none; height:350px;"><canvas id="statsChart"></canvas></div>
-        <div id="view-tools" style="display:none;">
-            <div id="tools-locked-msg" style="text-align:center; padding:40px 0; color:#999;">🔒 区域已锁定，请先登录</div>
-            <div id="tools-content" style="display:none;">
-                <button class="btn" style="background:#f8f9fa; border:1px solid #ddd; margin-bottom:10px;" onclick="startLuckyDraw()">🎡 幸运抽奖</button>
-                <button class="btn" style="background:#f8f9fa; border:1px solid #ddd; margin-bottom:10px;" onclick="showMissingPeople()">🕵️‍♂️ 谁还没来</button>
-                <button class="btn" style="background:#f8f9fa; border:1px solid #ddd; margin-bottom:10px;" onclick="generateRandomTeams()">🤝 随机分组</button>
-                <div id="tool-result" style="padding:10px; background:rgba(0,0,0,0.05); border-radius:10px; font-size:13px; min-height:60px;"></div>
-                <button class="btn btn-primary" onclick="exportCleanCSV()" style="background:var(--primary); margin-top:10px;">📊 导出纯名单 (Excel)</button>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button class="btn" style="background:#333; color:white; font-size:11px; flex:1;" onclick="exportData()">📤 导出备份</button>
-                    <button class="btn" style="background:#333; color:white; font-size:11px; flex:1;" onclick="checkAdminAction(()=>document.getElementById('import-upload').click())">📥 载入文件</button>
-                </div>
-            </div>
+
+        <button id="set-family-btn" class="btn" style="background:var(--accent); display:none;" onclick="saveFamilyGroup()">👨‍👩‍👧‍👦 设为家庭组</button>
+    </div>
+
+    <!-- 3. 今日记录 -->
+    <div class="card">
+        <h3>📜 今日已到</h3>
+        <div style="font-size:12px; color:#888; display:flex; justify-content:space-between; margin-bottom:10px;">
+            <span id="today-date"></span>
+            <span id="today-count">共 0 人</span>
         </div>
+        <div id="history-list" style="max-height: 250px; overflow-y: auto;"></div>
     </div>
 </div>
 
-<!-- 各个弹窗保持不变 -->
-<div class="modal-overlay" id="login-modal"><div class="modal"><h3>管理员登录</h3><input type="text" id="admin-user" placeholder="账号"><input type="password" id="admin-pass" placeholder="密码"><button class="btn btn-primary" onclick="performLogin()">登录</button><button class="btn" onclick="closeLoginModal()" style="background:none; color:#999;">取消</button></div></div>
-<div class="modal-overlay" id="person-history-modal"><div class="modal"><h3 id="ph-name"></h3><div id="ph-summary"></div><div id="ph-list" style="max-height:250px; overflow-y:auto; border:1px solid #eee; border-radius:12px; margin:10px 0;"></div><button class="btn btn-primary" onclick="closePHModal()">关闭</button></div></div>
-<div class="modal-overlay" id="modal-overlay"><div class="modal"><h4>管理群组</h4><input type="text" id="edit-family-name"><div id="modal-member-list" style="max-height:150px; overflow-y:auto; border:1px solid #eee; border-radius:10px; margin-bottom:10px; background:#fafafa"></div><div style="display:flex; gap:5px; margin-bottom:10px"><input type="text" id="new-member-input" placeholder="姓名" style="flex:1;"><input type="text" id="birthday-input" placeholder="MMDD" style="width:70px;"><button onclick="addMemberInModal()" style="padding:0 15px; background:var(--primary); color:white; border:none; border-radius:10px;">+</button></div><button class="btn btn-primary" onclick="saveFamilyEdit()">确认修改</button><button class="btn" onclick="closeModal()" style="background:none; color:#999;">关闭</button></div></div>
-
 <script>
-    // --- 状态管理 ---
-    let isAdmin = false;
-    const adminUser = "admin", adminPass = "8181";
+    const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+    let faceMatcher = null;
+
     let state = {
-        savedNames: JSON.parse(localStorage.getItem('local_savedNames') || '[]'),
-        families: JSON.parse(localStorage.getItem('local_families') || '[]'),
-        history: JSON.parse(localStorage.getItem('local_history') || '[]'),
-        birthdays: JSON.parse(localStorage.getItem('local_birthdays') || '{}'),
-        currentSelected: new Set(),
-        currentMood: "😊"
+        names: JSON.parse(localStorage.getItem('ai_names') || '[]'),
+        families: JSON.parse(localStorage.getItem('ai_families') || '[]'),
+        history: JSON.parse(localStorage.getItem('ai_history') || '[]'),
+        faces: JSON.parse(localStorage.getItem('ai_face_data') || '[]'),
+        selected: new Set()
     };
 
-    function persist() {
-        localStorage.setItem('local_savedNames', JSON.stringify(state.savedNames));
-        localStorage.setItem('local_families', JSON.stringify(state.families));
-        localStorage.setItem('local_history', JSON.stringify(state.history));
-        localStorage.setItem('local_birthdays', JSON.stringify(state.birthdays));
-        refreshAllUI();
-    }
-
-    // --- 修复：心情选择不影响下拉框 ---
-    function setupMoodPicker() {
-        const moodItems = document.querySelectorAll('.mood-item');
-        moodItems.forEach(item => {
-            item.onclick = function(e) {
-                e.stopPropagation(); // 阻止事件冒泡
-                moodItems.forEach(m => m.classList.remove('active'));
-                this.classList.add('active');
-                state.currentMood = this.getAttribute('data-mood');
-                // 切换心情后强制把焦点放回输入框，触发下拉列表重绘
-                const input = document.getElementById('name-input');
-                input.focus();
-                renderDropdown(input.value); 
+    // --- 1. 系统初始化 ---
+    async function init() {
+        try {
+            const msg = document.getElementById('load-msg');
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            msg.innerText = "加载识别模型...";
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+            await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+            
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+            
+            video.onloadedmetadata = () => {
+                video.play();
+                document.getElementById('loader').style.display = 'none';
+                updateFaceMatcher();
+                startAI();
             };
-        });
+        } catch (e) { alert("启动失败，请检查摄像头。"); }
+        renderHistory();
     }
 
-    // --- 修复：下拉框渲染逻辑 ---
-    function renderDropdown(k = '') {
-        const dropdown = document.getElementById('dropdown-list');
-        const key = k.toLowerCase().trim();
-        
-        const matchedF = state.families.filter(f => f.name.toLowerCase().includes(key));
-        const matchedP = state.savedNames.filter(n => n.toLowerCase().includes(key));
-        
-        // 如果输入框没字且没匹配，隐藏
-        if(!key && !matchedF.length && !matchedP.length) {
-            dropdown.classList.remove('show');
-            return;
-        }
+    // --- 2. 核心 AI 识别 ---
+    function startAI() {
+        const video = document.getElementById('video');
+        const canvas = faceapi.createCanvasFromMedia(video);
+        document.getElementById('video-wrapper').append(canvas);
+        const displaySize = { width: video.offsetWidth, height: video.offsetHeight };
+        faceapi.matchDimensions(canvas, displaySize);
 
-        let html = '';
-        matchedF.forEach(f => {
-            html += `<div class="dropdown-item" onclick="selectFamily('${f.name}')"><span>🏠 <b>${f.name}</b></span>${isAdmin?`<div><span onclick="openEditModal(event, ${state.families.indexOf(f)})">✏️</span><span style="color:red;margin-left:10px" onclick="deleteFamily(event,'${f.name}')">×</span></div>`:''}</div>`;
-        });
-        matchedP.forEach(n => {
-            html += `<div class="dropdown-item" onclick="togglePerson('${n}')"><span>${n} ${getMedal(n)}</span>${isAdmin?`<span style="color:#ccc" onclick="deletePerson(event,'${n}')">×</span>`:''}</div>`;
-        });
+        setInterval(async () => {
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
+            const resized = faceapi.resizeResults(detections, displaySize);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        dropdown.innerHTML = html || '<div class="dropdown-item" style="color:#999">无匹配</div>';
-        dropdown.classList.add('show');
+            resized.forEach(det => {
+                let name = "未知人员", color = "#ff4757";
+                if (faceMatcher) {
+                    const match = faceMatcher.findBestMatch(det.descriptor);
+                    if (match.label !== 'unknown') {
+                        name = match.label;
+                        color = "#2ed573";
+                        const today = new Date().toLocaleDateString('zh-CN');
+                        if (state.history.some(h => h.name === name && h.date === today)) {
+                            name += " (已签到)"; color = "#007bff";
+                        } else { autoCheckIn(name); }
+                    }
+                }
+                const { x, y, width, height } = det.detection.box;
+                const mirroredX = displaySize.width - x - width;
+                ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.strokeRect(mirroredX, y, width, height);
+                ctx.fillStyle = color; ctx.font = "bold 16px Arial"; ctx.fillText(name, mirroredX, y > 20 ? y - 10 : y + 20);
+            });
+        }, 400);
     }
 
-    // --- 核心业务 ---
-    function doCheckIn() {
+    // --- 3. 签到逻辑 ---
+    function autoCheckIn(name) {
+        const today = new Date().toLocaleDateString('zh-CN');
+        state.history.unshift({ name, date: today, time: new Date().toLocaleTimeString().substring(0,5), mood: "🤖" });
+        saveData(); confetti({ particleCount: 100, spread: 70 }); renderHistory();
+    }
+
+    function submitManualCheckIn() {
         const input = document.getElementById('name-input');
-        if (input.value.trim()) state.currentSelected.add(input.value.trim());
-        if (state.currentSelected.size === 0) return alert("请选择人员");
-        
-        const dateStr = new Date().toLocaleDateString('zh-CN');
-        const batch = Array.from(state.currentSelected);
-        const signedToday = state.history.filter(h => h.date === dateStr).map(h => h.name.toLowerCase());
-        const dups = batch.filter(n => signedToday.includes(n.toLowerCase()));
-        if (dups.length > 0) return alert(`⚠️ 重复：${dups.join(', ')} 今天已签到。`);
+        if (input.value.trim()) state.selected.add(input.value.trim());
+        if (state.selected.size === 0) return alert("请先选人");
 
-        const mmdd = (new Date().getMonth()+1).toString().padStart(2,'0') + new Date().getDate().toString().padStart(2,'0');
-        let bday = false;
-        batch.forEach(n => {
-            if (!state.savedNames.some(sn => sn.toLowerCase() === n.toLowerCase())) state.savedNames.push(n);
-            state.history.unshift({ name:n, date:dateStr, time:new Date().toTimeString().split(' ')[0].substring(0,5), hour:new Date().getHours(), mood:state.currentMood });
-            if (state.birthdays[n] === mmdd) bday = true;
+        const today = new Date().toLocaleDateString('zh-CN');
+        state.selected.forEach(n => {
+            if (!state.history.some(h => h.name === n && h.date === today)) {
+                state.history.unshift({ name: n, date: today, time: new Date().toLocaleTimeString().substring(0,5), mood: "😊" });
+                if(!state.names.includes(n)) state.names.push(n);
+            }
         });
-
-        state.currentSelected.clear();
-        input.value = '';
-        persist();
-        if(bday) confetti({particleCount:150, spread:70});
+        state.selected.clear(); input.value = '';
+        saveData(); renderHistory(); refreshTags();
         alert("✅ 签到成功！");
     }
 
-    // --- UI 及其他辅助 ---
-    function refreshAllUI() {
-        updateDateOptions(); updateTodayCount(); renderHistoryList(); refreshUI();
-    }
-    function refreshUI() {
-        document.getElementById('tag-container').innerHTML = Array.from(state.currentSelected).map(n => `<div class="tag">${n} <span onclick="removeFromSelected('${n}')" style="cursor:pointer">×</span></div>`).join('');
-        document.getElementById('submit-btn').innerText = `确认提交 (${state.currentSelected.size}人)`;
-        document.getElementById('set-family-btn').style.display = state.currentSelected.size >= 2 ? 'block' : 'none';
-        renderDropdown(document.getElementById('name-input').value);
-    }
-    function togglePerson(n) { state.currentSelected.add(n); document.getElementById('name-input').value=''; refreshUI(); document.getElementById('name-input').focus(); }
-    function selectFamily(n) { const f = state.families.find(x=>x.name===n); if(f) f.members.forEach(m=>state.currentSelected.add(m)); document.getElementById('name-input').value=''; refreshUI(); document.getElementById('name-input').focus(); }
-    function removeFromSelected(n) { state.currentSelected.delete(n); refreshUI(); }
-    
-    // 管理员逻辑
-    function handleLockClick() { isAdmin ? performLogout() : openLoginModal(); }
-    function openLoginModal() { document.getElementById('login-modal').style.display='flex'; }
-    function closeLoginModal() { document.getElementById('login-modal').style.display='none'; }
-    function performLogin() { if(document.getElementById('admin-user').value===adminUser && document.getElementById('admin-pass').value===adminPass) { isAdmin=true; document.getElementById('admin-lock-btn').innerHTML="🔓"; document.getElementById('admin-lock-btn').classList.add('unlocked'); closeLoginModal(); updateUIByAuth(); } else alert("错误"); }
-    function performLogout() { isAdmin=false; document.getElementById('admin-lock-btn').innerHTML="🔒"; document.getElementById('admin-lock-btn').classList.remove('unlocked'); updateUIByAuth(); }
-    function updateUIByAuth() { document.getElementById('tools-locked-msg').style.display = isAdmin ? 'none' : 'block'; document.getElementById('tools-content').style.display = isAdmin ? 'block' : 'none'; refreshAllUI(); }
-    function checkAdminAction(cb) { isAdmin ? cb() : openLoginModal(); }
-
-    // 其它逻辑
-    function renderHistoryList() {
-        const filter = document.getElementById('date-filter').value;
-        let data = state.history.map((h, i) => ({...h, originalIndex: i}));
-        if(filter !== 'all') data = data.filter(h => h.date === filter);
-        document.getElementById('history-list').innerHTML = data.map(h => `<div class="record-item"><div>${h.mood || '😊'} <b class="clickable-name" onclick="showPersonHistory('${h.name}')">${h.name}</b> ${getMedal(h.name)}<br><small style="color:#999">${h.date} ${h.time}</small></div>${isAdmin ? `<span style="color:var(--danger);cursor:pointer;font-size:20px" onclick="deleteRecord(${h.originalIndex})">×</span>` : ''}</div>`).join('') || '<p style="text-align:center;color:#999">无记录</p>';
-    }
-    function updateDateOptions() { const dates = [...new Set(state.history.map(h => h.date))].sort((a,b) => new Date(b) - new Date(a)); document.getElementById('date-filter').innerHTML = '<option value="all">显示全部记录</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join(''); }
-    function updateTodayCount() { const today = new Date().toLocaleDateString('zh-CN'); document.getElementById('today-count').innerText = `今日: ${state.history.filter(h => h.date === today).length}人`; }
-    function getMedal(n) { const c = state.history.filter(h => h.name.toLowerCase() === n.toLowerCase()).length; return c >= 21 ? '👑' : c >= 6 ? '🔥' : '🌱'; }
-    function switchTab(t) { ['list', 'stats', 'tools'].forEach(x => document.getElementById('view-'+x).style.display = x === t ? 'block' : 'none'); ['tab-list', 'tab-stats', 'tab-tools'].forEach(x => document.getElementById(x).className = x === 'tab-'+t ? 'active' : ''); if(t === 'stats') setTimeout(initCharts, 100); }
-    function deleteRecord(i) { if(confirm("删除？")) { state.history.splice(i,1); persist(); } }
-    function deletePerson(e,n) { e.stopPropagation(); if(confirm(`彻底删除 "${n}" 记忆？`)) { state.savedNames=state.savedNames.filter(x=>x!==n); persist(); } }
-    function deleteFamily(e,n) { e.stopPropagation(); if(confirm(`解散组 "${n}"？`)) { state.families=state.families.filter(f=>f.name!==n); persist(); } }
-    function saveFamily() { const n = prompt("家庭组名称:"); if(n) { state.families.push({name:n, members:Array.from(state.currentSelected)}); persist(); } }
-    function showPersonHistory(name) { const hists = state.history.filter(h => h.name.toLowerCase() === name.toLowerCase()); document.getElementById('ph-name').innerText = name + " " + getMedal(name); document.getElementById('ph-summary').innerText = `累计签到：${hists.length} 次`; document.getElementById('ph-list').innerHTML = hists.map(h => `<div style="padding:10px; border-bottom:1px solid #f9f9f9; display:flex; justify-content:space-between; font-size:13px;"><span>📅 ${h.date}</span><span>${h.time} ${h.mood||''}</span></div>`).join('') || '<div style="padding:20px;text-align:center;color:#999;">无记录</div>'; document.getElementById('person-history-modal').style.display='flex'; }
-    function closePHModal() { document.getElementById('person-history-modal').style.display='none'; }
-    function exportCleanCSV() { const groups = {}; state.history.forEach(h => { if(!groups[h.date]) groups[h.date]=[]; groups[h.date].push(h.name); }); let csv = "\ufeff日期,人数,名单\n"; Object.keys(groups).sort((a,b)=>new Date(b)-new Date(a)).forEach(d => { csv += `${d},${groups[d].length}人,"${groups[d].join('; ')}"\n`; }); const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`名单.csv`; a.click(); }
-    function exportData() { const blob = new Blob([JSON.stringify({...state, appTitle:localStorage.getItem('appTitle')}, null, 2)], {type:'application/json'}); const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`备份.json`; a.click(); }
-    function editAppTitle() { const v = prompt("改标题:"); if(v) { document.getElementById('display-title').innerText=v; localStorage.setItem('appTitle',v); } }
-
-    // 键盘监听
-    document.getElementById('name-input').addEventListener('input', (e) => renderDropdown(e.target.value));
-    document.getElementById('name-input').addEventListener('focus', (e) => renderDropdown(e.target.value));
-    document.getElementById('name-input').addEventListener('keydown', (e) => {
-        if(e.key === 'Backspace' && !e.target.value) { const a = Array.from(state.currentSelected); if(a.length) { state.currentSelected.delete(a[a.length-1]); refreshUI(); } }
-        if(e.key === 'Tab' && document.getElementById('dropdown-list').classList.contains('show')) { e.preventDefault(); const f = document.querySelector('.dropdown-item'); if(f) f.click(); }
-        if(e.key === 'Enter' && e.target.value.trim()) { state.currentSelected.add(e.target.value.trim()); e.target.value = ''; refreshUI(); }
-    });
-
-    window.onclick = (e) => { if(!e.target.closest('.input-group-wrapper')) document.getElementById('dropdown-list').classList.remove('show'); };
-    document.oncontextmenu = (e) => { if(!e.target.closest('.glass-card') && !e.target.closest('.modal')) { e.preventDefault(); document.getElementById('bg-upload').click(); } };
-    document.getElementById('bg-upload').onchange = (e) => { const r = new FileReader(); r.onload = (ev) => { document.body.style.backgroundImage=`url(${ev.target.result})`; localStorage.setItem('customBg', ev.target.result); }; r.readAsDataURL(e.target.files[0]); };
-    document.getElementById('import-upload').onchange = (e) => { const r = new FileReader(); r.onload = (ev) => { Object.assign(state, JSON.parse(ev.target.result)); state.currentSelected=new Set(); persist(); location.reload(); }; r.readAsText(e.target.files[0]); };
-
-    let chartInstance = null;
-    function initCharts() { const ctx = document.getElementById('statsChart').getContext('2d'); if (chartInstance) chartInstance.destroy(); const counts = {}; state.history.forEach(h => counts[h.date] = (counts[h.date] || 0) + 1); const labels = Object.keys(counts).sort((a,b)=>new Date(a)-new Date(b)).slice(-7); chartInstance = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: '人数', data: labels.map(l => counts[l]), backgroundColor: 'rgba(0,123,255,0.5)', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-    
-    function startLuckyDraw() { const list = state.history.filter(h => h.date === new Date().toLocaleDateString('zh-CN')).map(h => h.name); if(!list.length) return alert("今日无人"); let i = 0, res = document.getElementById('tool-result'), timer = setInterval(() => { res.innerText = "🎡 抽奖中: " + list[Math.floor(Math.random()*list.length)]; if(++i > 20) { clearInterval(timer); res.innerHTML = "🎉 中奖者: <b style='color:var(--danger)'>"+list[Math.floor(Math.random()*list.length)]+"</b>"; } }, 80); }
-    function showMissingPeople() { const today = new Date().toLocaleDateString('zh-CN'), signed = state.history.filter(h => h.date === today).map(h => h.name.toLowerCase()); const missing = state.savedNames.filter(n => !signed.includes(n.toLowerCase())); document.getElementById('tool-result').innerText = missing.length ? "🕵️‍♂️ 缺席名单:\n" + missing.join(', ') : "✅ 到齐！"; }
-    function generateRandomTeams() { const present = state.history.filter(h => h.date === new Date().toLocaleDateString('zh-CN')).map(h => h.name).sort(() => Math.random() - 0.5); const n = prompt("分几组？", "2"); if (!n || present.length < 2) return; let res = "🤝 结果：\n"; for(let i=0; i<n; i++) { const team = present.filter((_, idx) => idx % n === i); if(team.length) res += `组${i+1}: ${team.join(', ')}\n`; } document.getElementById('tool-result').innerText = res; }
-
-    function init() {
-        state.history = state.history.filter(h => h && h.date && h.name && h.date !== "undefined");
-        document.getElementById('display-title').innerText = localStorage.getItem('appTitle') || "Sunday Service";
-        const bg = localStorage.getItem('customBg'); if(bg) document.body.style.backgroundImage = `url(${bg})`;
-        setupMoodPicker();
-        updateUIByAuth();
+    // --- 4. 家庭组逻辑 ---
+    function saveFamilyGroup() {
+        const members = Array.from(state.selected);
+        if (members.length < 2) return alert("请至少选择两个人");
+        const groupName = prompt("请输入家庭/群组名称 (如: Chung Family):");
+        if (!groupName) return;
+        
+        state.families = state.families.filter(f => f.name !== groupName);
+        state.families.push({ name: groupName, members: members });
+        saveData();
+        alert(`✅ 群组 "${groupName}" 已保存！`);
     }
 
-    init();
+    function selectFamily(familyName) {
+        const group = state.families.find(f => f.name === familyName);
+        if (group) group.members.forEach(m => state.selected.add(m));
+        document.getElementById('name-input').value = '';
+        document.getElementById('dropdown').style.display = 'none';
+        refreshTags();
+    }
+
+    // --- 5. 删除功能 ---
+    function deleteRecord(originalIndex) {
+        if (prompt("请输入管理员密码以删除记录:") === "8181") {
+            state.history.splice(originalIndex, 1);
+            saveData();
+            renderHistory();
+        } else { alert("密码错误！"); }
+    }
+
+    // --- 6. 辅助功能 ---
+    function saveData() {
+        localStorage.setItem('ai_names', JSON.stringify(state.names));
+        localStorage.setItem('ai_families', JSON.stringify(state.families));
+        localStorage.setItem('ai_history', JSON.stringify(state.history));
+        localStorage.setItem('ai_face_data', JSON.stringify(state.faces));
+        updateStats();
+    }
+
+    function renderHistory() {
+        const today = new Date().toLocaleDateString('zh-CN');
+        // 为删除功能保留原始索引
+        const listHtml = state.history.map((h, index) => {
+            if (h.date !== today) return '';
+            return `<div class="log-item">
+                <span><b>${h.name}</b> <small>${h.mood}</small></span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <small>${h.time}</small>
+                    <span class="del-btn" onclick="deleteRecord(${index})">×</span>
+                </div>
+            </div>`;
+        }).join('');
+        document.getElementById('history-list').innerHTML = listHtml || '<div style="text-align:center; color:#555; padding:20px;">今日暂无记录</div>';
+    }
+
+    function updateStats() {
+        const today = new Date().toLocaleDateString('zh-CN');
+        const count = state.history.filter(h => h.date === today).length;
+        document.getElementById('today-count').innerText = `共 ${count} 人`;
+        document.getElementById('today-date').innerText = today;
+    }
+
+    function refreshTags() {
+        document.getElementById('tag-container').innerHTML = Array.from(state.selected).map(n => `<div class="tag">${n} <span onclick="state.selected.delete('${n}');refreshTags();" style="cursor:pointer">×</span></div>`).join('');
+        document.getElementById('submit-btn').innerText = `确认提交 (${state.selected.size}人)`;
+        document.getElementById('set-family-btn').style.display = state.selected.size >= 2 ? 'block' : 'none';
+    }
+
+    // 搜索建议
+    document.getElementById('name-input').oninput = (e) => {
+        const key = e.target.value.toLowerCase();
+        const drop = document.getElementById('dropdown');
+        if (!key) { drop.style.display = 'none'; return; }
+        
+        let html = '';
+        // 匹配家庭
+        state.families.filter(f => f.name.toLowerCase().includes(key)).forEach(f => {
+            html += `<div class="dropdown-item" onclick="selectFamily('${f.name}')"><span>🏠 ${f.name}</span><small>群组</small></div>`;
+        });
+        // 匹配个人
+        state.names.filter(n => n.toLowerCase().includes(key)).forEach(n => {
+            html += `<div class="dropdown-item" onclick="selectName('${n}')"><span>👤 ${n}</span></div>`;
+        });
+        
+        drop.innerHTML = html;
+        drop.style.display = html ? 'block' : 'none';
+    };
+
+    // 录入/导入逻辑 (保持不变)
+    async function registerFace() {
+        const video = document.getElementById('video');
+        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+        if (det) {
+            const name = prompt("请输入姓名:");
+            if (!name) return;
+            state.faces = state.faces.filter(f => f.name !== name);
+            state.faces.push({ name, descriptor: Array.from(det.descriptor) });
+            if(!state.names.includes(name)) state.names.push(name);
+            saveData(); updateFaceMatcher(); alert("录入成功！");
+        } else alert("未检测到人脸");
+    }
+
+    function updateFaceMatcher() {
+        if (!state.faces.length) return;
+        const labeled = state.faces.map(f => new faceapi.LabeledFaceDescriptors(f.name, [new Float32Array(f.descriptor)]));
+        faceMatcher = new faceapi.FaceMatcher(labeled, 0.6);
+    }
+
+    function selectName(n) { state.selected.add(n); document.getElementById('name-input').value = ''; document.getElementById('dropdown').style.display = 'none'; refreshTags(); }
+
+    window.onload = init;
 </script>
 </body>
 </html>
