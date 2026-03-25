@@ -1,0 +1,145 @@
+{
+  "savedNames": [
+    "Chung Ka Ho",
+    "Lim Yu Yan",
+    "Wushin",
+    "Rio",
+    "Sophie",
+    "HyungShin",
+    "Rina",
+    "Louis",
+    "Charles",
+    "King",
+    "JingJie"
+  ],
+  "families": [
+    {
+      "name": "Chung Family",
+      "members": [
+        "Chung Ka Ho",
+        "Lim Yu Yan"
+      ]
+    },
+    {
+      "name": "Wushin Family",
+      "members": [
+        "Wushin",
+        "Rio",
+        "Sophie"
+      ]
+    },
+    {
+      "name": "HyungShin Family",
+      "members": [
+        "HyungShin",
+        "Rina",
+        "Louis",
+        "Charles"
+      ]
+    },
+    {
+      "name": "King Family",
+      "members": [
+        "King",
+        "JingJie"
+      ]
+    },
+    {
+      "name": "Philip Family",
+      "members": [
+        "Sumima",
+        "Philip"
+      ]
+    },
+    {
+      "name": "Christopher Family",
+      "members": [
+        "Misun",
+        "Christopher"
+      ]
+    }
+  ],
+  "history": [
+    {
+      "name": "JingJie",
+      "date": "2026/3/25",
+      "time": "16:43",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "King",
+      "date": "2026/3/25",
+      "time": "16:43",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "Charles",
+      "date": "2026/3/25",
+      "time": "16:42",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "Louis",
+      "date": "2026/3/25",
+      "time": "16:42",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "Rina",
+      "date": "2026/3/25",
+      "time": "16:42",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "HyungShin",
+      "date": "2026/3/25",
+      "time": "16:42",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "Sophie",
+      "date": "2026/3/25",
+      "time": "16:41",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "Rio",
+      "date": "2026/3/25",
+      "time": "16:41",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "Wushin",
+      "date": "2026/3/25",
+      "time": "16:41",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "Lim Yu Yan",
+      "date": "2026/3/25",
+      "time": "16:36",
+      "hour": 16,
+      "mood": "😊"
+    },
+    {
+      "name": "Chung Ka Ho",
+      "date": "2026/3/25",
+      "time": "16:36",
+      "hour": 16,
+      "mood": "😊"
+    }
+  ],
+  "birthdays": {},
+  "currentSelected": {},
+  "currentMood": "😊",
+  "appTitle": "Welcome to participate today's Sunday Service (29/3)"
+}
