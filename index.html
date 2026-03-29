@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 智能人脸签到系统 - 旗舰全功能修复版</title>
-    <!-- 引入库 -->
+    <title>AI 智能人脸签到系统 - 最终修复版</title>
+    <!-- 引入插件 -->
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -12,7 +12,6 @@
         :root { --primary: #007bff; --success: #2ed573; --danger: #ff4757; --accent: #6f42c1; --warning: #f1c40f; }
         body { margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: 'Segoe UI', system-ui; background: #121212; color: #eee; }
         
-        /* 核心显示区 */
         #display-wrapper { position: relative; width: 100%; max-width: 550px; border-radius: 24px; overflow: hidden; border: 4px solid #333; background: #000; box-shadow: 0 15px 50px rgba(0,0,0,0.6); margin-bottom: 20px; }
         video { width: 100%; display: block; transform: scaleX(-1); }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
@@ -20,13 +19,7 @@
         #static-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; justify-content: center; align-items: center; z-index: 5; }
         #static-overlay img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* 底部交互命名框 */
-        #naming-box { 
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); 
-            background: rgba(0, 0, 0, 0.95); padding: 20px; border-radius: 20px; 
-            border: 2px solid var(--warning); display: none; z-index: 100; 
-            width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-        }
+        #naming-box { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.95); padding: 20px; border-radius: 20px; border: 2px solid var(--warning); display: none; z-index: 100; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         #naming-box input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #444; margin-bottom: 15px; font-size: 16px; text-align: center; background: #222; color: white; }
         .naming-btns { display: flex; flex-wrap: wrap; gap: 8px; }
         .naming-btns button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
@@ -35,9 +28,7 @@
         .card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(15px); padding: 20px; border-radius: 24px; width: 340px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.1); position: relative; }
         
         .admin-wrap { position: absolute; top: 15px; right: 20px; z-index: 100; }
-        .lock-btn { cursor: pointer; font-size: 20px; opacity: 0.5; transition: 0.3s; }
-        .lock-btn.active { opacity: 1; color: var(--primary); }
-
+        .lock-btn { cursor: pointer; font-size: 20px; opacity: 0.5; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 8px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-reg { background: var(--accent); }
         .btn-checkin { background: var(--success); }
@@ -47,30 +38,19 @@
 
         .input-group { background: white; border-radius: 10px; padding: 8px; display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; min-height: 40px; align-items: center;}
         #name-input { border: none; outline: none; flex: 1; min-width: 60px; font-size: 14px; color: #333; background: transparent; }
-        .tag { background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+        .tag { background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; }
         
-        .log-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        .del-btn { color: var(--danger); cursor: pointer; font-size: 18px; padding: 0 5px; font-weight: bold; }
-
-        /* 弹窗样式修正 */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: none; justify-content: center; align-items: center; }
-        .modal { background: #1e1e1e; padding: 25px; border-radius: 24px; width: 90%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-        .modal input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #333; background: #222; color: white; box-sizing: border-box; }
+        .modal { background: #1e1e1e; padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
         .list-container { max-height: 300px; overflow-y: auto; border: 1px solid #333; border-radius: 10px; margin: 10px 0; }
         .list-item { padding: 12px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
-
+        .log-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div id="loader">
-    <div class="spinner"></div>
-    <div id="load-msg">🤖 正在加载 AI 视觉系统...</div>
-</div>
-
+<div id="loader"><div style="font-size: 24px;">🤖 AI 系统启动中...</div></div>
 <input type="file" id="face-import-input" accept=".json" style="display:none">
 <input type="file" id="image-upload-input" accept="image/*" style="display:none">
 
@@ -78,82 +58,53 @@
     <video id="video" autoplay muted playsinline></video>
     <div id="static-overlay"><img id="processed-img" src=""></div>
     <canvas id="overlay-canvas"></canvas>
-
-    <!-- 可视化命名框 -->
     <div id="naming-box">
-        <div id="naming-info" style="color:var(--warning); font-size:14px; font-weight:bold; margin-bottom:10px;">识别到人脸</div>
+        <div id="naming-info" style="color:var(--warning); font-size:14px; font-weight:bold; margin-bottom:10px;">识别到新面孔</div>
         <input type="text" id="custom-name-input" placeholder="输入姓名保存...">
         <div class="naming-btns">
-            <button onclick="confirmNaming()" style="background:var(--success); color:white; width:100%; margin-bottom:8px;">✅ 确认保存</button>
-            <button onclick="skipNaming()" style="background:#555; color:white;">⏭️ 略过</button>
-            <button onclick="cancelNaming()" style="background:var(--danger); color:white;">❌ 取消</button>
+            <button onclick="confirmNaming()" style="background:var(--success); color:white;">确认保存</button>
+            <button onclick="skipNaming()" style="background:#555; color:white;">略过</button>
+            <button onclick="cancelNaming()" style="background:var(--danger); color:white;">取消</button>
         </div>
     </div>
 </div>
 
 <div class="container">
-    <!-- 1. 档案管理 -->
     <div class="card">
         <h3>📸 档案中心</h3>
-        <button class="btn btn-reg" onclick="registerFace()">📸 实时捕获录入</button>
+        <button class="btn btn-reg" onclick="registerFace()">📸 捕获新成员</button>
         <button class="btn btn-fix btn-admin" onclick="fixRecognition()">🔧 纠正当前识别</button>
-        <button class="btn btn-outline" onclick="document.getElementById('image-upload-input').click()">🖼️ 从合照批量导入</button>
-        
-        <!-- 管理档案按钮 -->
-        <button class="btn btn-admin btn-outline" style="border-color:var(--primary); color:var(--primary);" onclick="openProfileManager()">👥 管理已录入人员</button>
-        
-        <div class="btn-admin" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap:5px;">
-            <div style="display:flex; gap:5px;">
-                <button class="btn btn-outline" style="flex:1; font-size:11px;" onclick="exportFaceProfiles()">📤 导出档案</button>
-                <button class="btn btn-outline" style="flex:1; font-size:11px;" onclick="document.getElementById('face-import-input').click()">📥 导入档案</button>
-            </div>
-            <button class="btn btn-outline" style="background: var(--primary); color: white; border: none;" onclick="exportAttendanceCSV()">📊 导出签到报表 (Excel)</button>
+        <button class="btn btn-outline" onclick="document.getElementById('image-upload-input').click()">🖼️ 智能照片导入</button>
+        <button class="btn btn-admin btn-outline" onclick="openProfileManager()">👥 管理名单</button>
+        <div class="btn-admin" style="display:flex; gap:5px; margin-top:10px; border-top:1px solid #333; padding-top:10px;">
+            <button class="btn btn-outline" style="flex:1; font-size:11px;" onclick="exportFaceProfiles()">📤 导出</button>
+            <button class="btn btn-outline" style="flex:1; font-size:11px;" onclick="document.getElementById('face-import-input').click()">📥 导入</button>
         </div>
     </div>
-
-    <!-- 2. 签到登记 -->
     <div class="card">
         <div class="admin-wrap">
-            <span id="logout-btn" style="font-size:11px; color:var(--danger); display:none; cursor:pointer; margin-right:10px;" onclick="performLogout()">退出登录</span>
+            <span id="logout-btn" style="font-size:11px; color:var(--danger); display:none; cursor:pointer;" onclick="performLogout()">退出</span>
             <span class="lock-btn" id="lock-icon" onclick="openLoginModal()">🔒</span>
         </div>
         <h3>✅ 签到登记</h3>
         <button class="btn btn-checkin" id="submit-btn" onclick="submitManualCheckIn()">确认提交 (0人)</button>
-        <div class="input-group">
-            <div id="tag-container" style="display:contents"></div>
-            <input type="text" id="name-input" placeholder="输入姓名或识别..." autocomplete="off">
-        </div>
+        <div class="input-group"><div id="tag-container" style="display:contents"></div><input type="text" id="name-input" placeholder="输入姓名..."></div>
+        <button class="btn btn-admin" style="background:var(--primary); font-size:11px;" onclick="exportAttendanceCSV()">📊 导出今日报表</button>
     </div>
-
-    <!-- 3. 历史 -->
     <div class="card">
         <h3>📜 今日已到</h3>
-        <div style="font-size:12px; color:#888; display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span id="today-date"></span>
-            <span id="today-count">共 0 人</span>
-        </div>
+        <div style="font-size:12px; color:#888; display:flex; justify-content:space-between; margin-bottom:10px;"><span id="today-date"></span><span id="today-count">共 0 人</span></div>
         <div id="history-list" style="max-height: 250px; overflow-y: auto;"></div>
     </div>
 </div>
 
-<!-- 弹窗1：登录 -->
 <div class="modal-overlay" id="login-modal"><div class="modal"><h3>管理员登录</h3><input type="text" id="admin-user" placeholder="用户名"><input type="password" id="admin-pass" placeholder="密码"><button class="btn btn-primary" onclick="performLogin()">登录</button><button class="btn" style="background:none;" onclick="closeModal('login-modal')">取消</button></div></div>
-
-<!-- 弹窗2：档案管理 -->
-<div class="modal-overlay" id="profile-modal">
-    <div class="modal">
-        <h3 style="margin-top:0">已录入人脸名单</h3>
-        <div class="list-container" id="profile-list-content">
-            <!-- 这里由JS填充 -->
-        </div>
-        <button class="btn btn-checkin" onclick="closeModal('profile-modal')">关闭窗口</button>
-    </div>
-</div>
+<div class="modal-overlay" id="profile-modal"><div class="modal"><h3>档案名单</h3><div class="list-container" id="profile-list-content"></div><button class="btn btn-checkin" onclick="closeModal('profile-modal')">关闭</button></div></div>
 
 <script>
     const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
     let isAdmin = false, faceMatcher = null, isFrozen = false;
-    let batchQueue = [], batchIndex = 0, currentFixDescriptor = null;
+    let batchQueue = [], batchIndex = 0, batchResults = [], currentFixDescriptor = null;
 
     let state = {
         names: JSON.parse(localStorage.getItem('ai_names') || '[]'),
@@ -162,7 +113,6 @@
         selected: new Set()
     };
 
-    // --- 1. 系统初始化 ---
     async function init() {
         try {
             await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
@@ -175,41 +125,47 @@
                 document.getElementById('video').play();
                 document.getElementById('loader').style.display = 'none';
                 updateFaceMatcher();
-                startRecognitionLoop();
+                startLiveRecognition();
             };
-        } catch (e) { alert("AI系统加载失败"); }
+        } catch (e) { alert("AI核心启动失败"); }
         renderHistory();
     }
 
-    // --- 2. 档案管理功能 (修复) ---
-    function openProfileManager() {
-        if (!isAdmin) return openLoginModal();
-        const container = document.getElementById('profile-list-content');
-        if (!state.faces || state.faces.length === 0) {
-            container.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">目前没有任何脸部档案</p>';
-        } else {
-            // 按姓名去重后展示（因为一个人可能录入多个特征，这里合并展示）
-            const uniqueNames = [...new Set(state.faces.map(f => f.name))];
-            container.innerHTML = uniqueNames.map(name => `
-                <div class="list-item">
-                    <span>👤 <b>${name}</b></span>
-                    <button onclick="deleteProfile('${name}')" style="color:var(--danger); background:none; border:none; cursor:pointer; font-weight:bold;">删除档案</button>
-                </div>`).join('');
-        }
-        document.getElementById('profile-modal').style.display = 'flex';
+    // --- 修复导入逻辑 ---
+    document.getElementById('face-import-input').onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            try {
+                const imported = JSON.parse(ev.target.result);
+                if (confirm("确定载入并覆盖当前数据吗？")) {
+                    state.names = imported.names || [];
+                    state.history = imported.history || [];
+                    state.faces = imported.faces || [];
+                    saveData();
+                    // 核心修复点：强制数据格式转换并重绘 AI
+                    updateFaceMatcher();
+                    alert("✅ 档案导入成功！已更新识别引擎。");
+                    location.reload(); 
+                }
+            } catch (err) { alert("文件解析错误！"); }
+        };
+        reader.readAsText(file);
+    };
+
+    function updateFaceMatcher() {
+        if (!state.faces || state.faces.length === 0) { faceMatcher = null; return; }
+        // 关键：将 JSON 读出的 Array 转换回 Float32Array
+        const labeledDescriptors = state.faces.map(f => {
+            const descriptor = new Float32Array(f.descriptor);
+            return new faceapi.LabeledFaceDescriptors(f.name, [descriptor]);
+        });
+        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.4);
     }
 
-    function deleteProfile(name) {
-        if (confirm(`确定要彻底删除 ${name} 的所有人脸档案吗？此操作不可撤销。`)) {
-            state.faces = state.faces.filter(f => f.name.toLowerCase() !== name.toLowerCase());
-            saveData();
-            updateFaceMatcher();
-            openProfileManager(); // 刷新列表
-        }
-    }
-
-    // --- 3. 实时识别 (圈头部、文字居中) ---
-    function startRecognitionLoop() {
+    // --- 视觉绘制逻辑 ---
+    function startLiveRecognition() {
         const video = document.getElementById('video');
         const canvas = document.getElementById('overlay-canvas');
         const size = { width: video.offsetWidth, height: video.offsetHeight };
@@ -225,118 +181,92 @@
             resized.forEach(det => {
                 let name = "未知人员", color = "#ff4757", isSigned = false;
                 if (faceMatcher) {
-                    const m = faceMatcher.findBestMatch(det.descriptor);
-                    if (m.label !== 'unknown') {
-                        name = m.label;
-                        const today = new Date().toLocaleDateString('zh-CN');
-                        isSigned = state.history.some(h => h.name.toLowerCase() === name.toLowerCase() && h.date === today);
+                    const match = faceMatcher.findBestMatch(det.descriptor);
+                    if (match.label !== 'unknown') {
+                        name = match.label;
+                        isSigned = state.history.some(h => h.name.toLowerCase() === name.toLowerCase() && h.date === new Date().toLocaleDateString('zh-CN'));
                         color = isSigned ? "#2ed573" : "#007bff";
                         if (!isSigned) autoCheckIn(name);
                     }
                 }
                 const { x, y, width, height } = det.detection.box;
-                const headShift = height * 0.25;
-                const headHeight = height * 1.3;
-                const mx = size.width - x - width;
-
-                ctx.strokeStyle = color; ctx.lineWidth = 4;
+                const headShift = height * 0.25, headHeight = height * 1.3, mx = size.width - x - width;
+                ctx.strokeStyle = color; ctx.lineWidth = 5;
                 ctx.strokeRect(mx, y - headShift, width, headHeight);
-                ctx.fillStyle = color;
-                const bh = isSigned ? 42 : 28;
+                ctx.fillStyle = color; const bh = isSigned ? 42 : 28;
                 ctx.fillRect(mx, y - headShift - bh, width, bh);
                 ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 15px Arial";
                 const cx = mx + (width / 2);
                 if (isSigned) {
-                    ctx.fillText(name, cx, y - headShift - 24);
-                    ctx.font = "11px Arial"; ctx.fillText("(已签到)", cx, y - headShift - 8);
-                } else {
-                    ctx.fillText(name, cx, y - headShift - 9);
-                }
+                    ctx.fillText(name, cx, y - headShift - 24); ctx.font = "11px Arial"; ctx.fillText("(已签到)", cx, y - headShift - 8);
+                } else { ctx.fillText(name, cx, y - headShift - 9); }
             });
         }, 400);
     }
 
-    // --- 4. 纠错、导入、导出逻辑 ---
+    // --- 业务功能 ---
     async function fixRecognition() {
-        if(!isAdmin) return openLoginModal();
         const video = document.getElementById('video');
         const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
         if (!det) return alert("未见人脸");
         isFrozen = true; currentFixDescriptor = Array.from(det.descriptor);
-        const ctx = document.getElementById('overlay-canvas').getContext('2d');
-        ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0,0,2000,2000);
-        document.getElementById('naming-info').innerText = "🔧 纠错模式：请更新当前人员姓名";
-        document.getElementById('naming-box').style.display = 'block';
-        document.getElementById('custom-name-input').value = "";
+        document.getElementById('naming-box').style.display='block'; document.getElementById('naming-info').innerText="🔧 正在纠正人脸";
     }
 
     function confirmNaming() {
         const name = document.getElementById('custom-name-input').value.trim();
         if (name) {
             const desc = currentFixDescriptor || Array.from(batchQueue[batchIndex].descriptor);
-            state.faces = state.faces.filter(f => f.name.toLowerCase() !== name.toLowerCase()); // 纠错模式下更新
+            state.faces = state.faces.filter(f => f.name.toLowerCase() !== name.toLowerCase());
             state.faces.push({ name, descriptor: desc });
-            if (!state.names.some(n => n.toLowerCase() === name.toLowerCase())) state.names.push(name);
+            if(!state.names.some(n=>n.toLowerCase()===name.toLowerCase())) state.names.push(name);
             saveData(); updateFaceMatcher();
         }
         if (currentFixDescriptor) cancelNaming(); else { batchIndex++; processBatch(); }
     }
 
-    // --- 其它常规业务逻辑 ---
     function submitManualCheckIn() {
         const inp = document.getElementById('name-input');
         if (inp.value.trim()) state.selected.add(inp.value.trim());
-        if (!state.selected.size) return alert("空");
         const today = new Date().toLocaleDateString('zh-CN');
         const signedToday = state.history.filter(h => h.date === today).map(h => h.name.toLowerCase());
         let added = false;
         state.selected.forEach(n => {
             if (!signedToday.includes(n.toLowerCase())) {
                 state.history.unshift({ name: n, date: today, time: new Date().toLocaleTimeString().substring(0,5), mood: "😊" });
-                if (!state.names.some(old => old.toLowerCase() === n.toLowerCase())) state.names.push(n);
                 added = true;
-            } else { alert(`${n} 已签过`); }
+            }
         });
-        state.selected.clear(); inp.value = ''; saveData(); renderHistory(); refreshTags();
+        state.selected.clear(); inp.value=''; saveData(); renderHistory(); refreshTags();
     }
 
-    function performLogin() {
-        if(document.getElementById('admin-user').value==="admin" && document.getElementById('admin-pass').value==="8181") {
-            isAdmin=true; document.getElementById('lock-icon').innerHTML="🔓"; document.getElementById('lock-icon').classList.add('active');
-            document.getElementById('logout-btn').style.display='inline'; document.querySelectorAll('.btn-admin').forEach(b=>b.style.display='block');
-            closeModal('login-modal'); renderHistory();
-        } else alert("错误");
-    }
-    function performLogout() { isAdmin=false; document.getElementById('lock-icon').innerHTML="🔒"; document.getElementById('lock-icon').classList.remove('active'); document.getElementById('logout-btn').style.display='none'; document.querySelectorAll('.btn-admin').forEach(b=>b.style.display='none'); renderHistory(); }
     function saveData() { localStorage.setItem('ai_names', JSON.stringify(state.names)); localStorage.setItem('ai_history', JSON.stringify(state.history)); localStorage.setItem('ai_face_data', JSON.stringify(state.faces)); }
-    function updateStats() { document.getElementById('today-count').innerText = `共 ${state.history.filter(h=>h.date===new Date().toLocaleDateString('zh-CN')).length} 人`; document.getElementById('today-date').innerText = new Date().toLocaleDateString('zh-CN'); }
     function renderHistory() {
         const today = new Date().toLocaleDateString('zh-CN');
-        document.getElementById('history-list').innerHTML = state.history.filter(h => h.date === today).map((h, i) => `<div class="log-item"><span><b>${h.name}</b></span><div><small>${h.time}</small> ${isAdmin ? `<span onclick="deleteLog(${i})" style="color:red; cursor:pointer; margin-left:10px;">×</span>` : ''}</div></div>`).join('');
-        updateStats();
-    }
-    function deleteLog(i) { state.history.splice(i,1); saveData(); renderHistory(); }
-    function refreshTags() { document.getElementById('tag-container').innerHTML = Array.from(state.selected).map(n => `<div class="tag">${n} <span onclick="state.selected.delete('${n}');refreshTags();" style="cursor:pointer;margin-left:5px">×</span></div>`).join(''); document.getElementById('submit-btn').innerText = `确认提交签到 (${state.selected.size}人)`; }
-    function updateFaceMatcher() { 
-        if (!state.faces || !state.faces.length) return faceMatcher = null; 
-        const labeled = state.faces.map(f => new faceapi.LabeledFaceDescriptors(f.name, [new Float32Array(f.descriptor)])); 
-        faceMatcher = new faceapi.FaceMatcher(labeled, 0.4); 
-    }
-    function autoCheckIn(n) { state.history.unshift({ name:n, date: new Date().toLocaleDateString('zh-CN'), time: new Date().toLocaleTimeString().substring(0,5), mood: "🤖" }); saveData(); confetti({ particleCount: 100 }); renderHistory(); }
-    function openLoginModal() { document.getElementById('login-modal').style.display='flex'; }
-    function closeModal(id) { document.getElementById(id).style.display='none'; }
-    function cancelNaming() { isFrozen = false; currentFixDescriptor = null; document.getElementById('naming-box').style.display='none'; document.getElementById('static-overlay').style.display='none'; document.getElementById('overlay-canvas').getContext('2d').clearRect(0,0,2000,2000); }
-    function skipNaming() { batchIndex++; processBatch(); }
-    
-    function exportFaceProfiles() { const b = new Blob([JSON.stringify(state)], {type:'application/json'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`Face_Backup.json`; a.click(); }
-    function exportAttendanceCSV() {
-        const groups = {}; state.history.forEach(h => { if(!groups[h.date]) groups[h.date]=[]; groups[h.date].push(h.name); });
-        let csv = "\ufeff日期,人数,名单\n";
-        Object.keys(groups).sort((a,b)=>new Date(b)-new Date(a)).forEach(d => { csv += `${d},${groups[d].length}人,"${groups[d].join('; ')}"\n`; });
-        const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`签到报表.csv`; a.click();
+        const list = state.history.filter(h => h.date === today);
+        document.getElementById('history-list').innerHTML = list.map((h, i) => `<div class="log-item"><span><b>${h.name}</b></span><div><small>${h.time}</small> ${isAdmin ? `<span onclick="deleteLog(${i})" style="color:red; cursor:pointer; margin-left:10px;">×</span>` : ''}</div></div>`).join('');
+        document.getElementById('today-count').innerText = `共 ${list.length} 人`; document.getElementById('today-date').innerText = today;
     }
 
-    // 批量逻辑
+    // 其余辅助逻辑 (登录, 导出报表等)
+    function performLogin() { if(document.getElementById('admin-user').value==="admin" && document.getElementById('admin-pass').value==="8181") { isAdmin=true; document.getElementById('lock-icon').innerHTML="🔓"; document.querySelectorAll('.btn-admin').forEach(e=>e.style.display="flex"); closeModal('login-modal'); renderHistory(); } }
+    function performLogout() { isAdmin=false; document.getElementById('lock-icon').innerHTML="🔒"; document.querySelectorAll('.btn-admin').forEach(e=>e.style.display="none"); renderHistory(); }
+    function exportFaceProfiles() { const b = new Blob([JSON.stringify(state)], {type:'application/json'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`AI_SignBackup.json`; a.click(); }
+    function exportAttendanceCSV() {
+        const groups = {}; state.history.forEach(h => { if(!groups[h.date]) groups[h.date]=[]; groups[h.date].push(h.name); });
+        let csv = "\ufeff日期,人数,名单\n"; Object.keys(groups).sort((a,b)=>new Date(b)-new Date(a)).forEach(d => { csv += `${d},${groups[d].length}人,"${groups[d].join('; ')}"\n`; });
+        const b = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`报表.csv`; a.click();
+    }
+    function cancelNaming() { isFrozen=false; currentFixDescriptor=null; document.getElementById('naming-box').style.display='none'; document.getElementById('static-overlay').style.display='none'; document.getElementById('overlay-canvas').getContext('2d').clearRect(0,0,2000,2000); }
+    function skipNaming() { batchIndex++; processBatch(); }
+    function openProfileManager() { document.getElementById('profile-list-content').innerHTML = state.faces.map(f => `<div class="list-item"><span><b>${f.name}</b></span><button onclick="deleteProfile('${f.name}')" style="color:red;border:none;background:none;">删除</button></div>`).join('') || '空'; document.getElementById('profile-modal').style.display='flex'; }
+    function deleteProfile(n) { if(confirm(`删除 ${n}?`)) { state.faces=state.faces.filter(f=>f.name!==n); saveData(); updateFaceMatcher(); openProfileManager(); } }
+    function closeModal(id) { document.getElementById(id).style.display='none'; }
+    function openLoginModal() { document.getElementById('login-modal').style.display='flex'; }
+    function autoCheckIn(n) { state.history.unshift({ name:n, date: new Date().toLocaleDateString('zh-CN'), time: new Date().toLocaleTimeString().substring(0,5), mood: "🤖" }); saveData(); confetti({ particleCount: 100 }); renderHistory(); }
+    function refreshTags() { document.getElementById('tag-container').innerHTML = Array.from(state.selected).map(n => `<div class="tag">${n} <span onclick="state.selected.delete('${n}');refreshTags();" style="cursor:pointer;margin-left:5px">×</span></div>`).join(''); document.getElementById('submit-btn').innerText = `确认提交签到 (${state.selected.size}人)`; }
+
+    // 批量导入
     document.getElementById('image-upload-input').onchange = async function(e) {
         const file = e.target.files[0]; if (!file) return;
         isFrozen = true; const img = await faceapi.bufferToImage(file);
@@ -346,20 +276,27 @@
         batchQueue = []; batchResults = [];
         resized.forEach(d => {
             const m = faceMatcher ? faceMatcher.findBestMatch(d.descriptor) : {label: 'unknown'};
-            if (m.label !== 'unknown') batchResults.push({ box: d.detection.box, label: m.label });
-            else batchQueue.push(d);
+            if (m.label !== 'unknown') batchResults.push({ box: d.detection.box, label: m.label }); else batchQueue.push(d);
         });
         batchIndex = 0; processBatch();
     };
     function processBatch() {
         if (batchIndex >= batchQueue.length) return cancelNaming();
         const canvas = document.getElementById('overlay-canvas'); const ctx = canvas.getContext('2d');
-        const img = document.getElementById('processed-img'); faceapi.matchDimensions(canvas, img);
         ctx.clearRect(0,0,2000,2000); ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        batchResults.forEach(r => { ctx.strokeStyle='#2ed573'; ctx.lineWidth=3; ctx.strokeRect(r.box.x, r.box.y, r.box.width, r.box.height); ctx.fillStyle='#2ed573'; ctx.fillText(r.label, r.box.x, r.box.y-5); });
+        batchResults.forEach(r => { ctx.strokeStyle='#2ed573'; ctx.strokeRect(r.box.x, r.box.y, r.box.width, r.box.height); ctx.fillStyle='#2ed573'; ctx.fillText(r.label, r.box.x, r.box.y-5); });
         const box = batchQueue[batchIndex].detection.box; ctx.clearRect(box.x, box.y, box.width, box.height);
         ctx.strokeStyle='#f1c40f'; ctx.lineWidth=6; ctx.strokeRect(box.x, box.y, box.width, box.height);
         document.getElementById('naming-box').style.display='block';
+    }
+
+    async function registerFace() {
+        const video = document.getElementById('video');
+        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+        if (det) {
+            const name = prompt("姓名:");
+            if (name) { state.faces.push({ name, descriptor: Array.from(det.descriptor) }); saveData(); updateFaceMatcher(); alert("录入成功"); }
+        }
     }
 
     window.onload = init;
