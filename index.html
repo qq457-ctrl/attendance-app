@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 智能人脸签到系统 - v1.0.1</title>
+    <title>AI 智能人脸签到系统 - v1.0.2</title>
     <!-- 引入库 -->
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,15 +12,12 @@
         :root { --primary: #007bff; --success: #28a745; --danger: #ff4757; --accent: #6f42c1; --warning: #f1c40f; }
         body { margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: 'Segoe UI', system-ui; background: #121212; color: #eee; }
         
-        /* 核心显示区 */
         #display-wrapper { position: relative; width: 100%; max-width: 550px; border-radius: 24px; overflow: hidden; border: 4px solid #333; background: #000; box-shadow: 0 15px 50px rgba(0,0,0,0.6); margin-bottom: 20px; }
         video { width: 100%; display: block; transform: scaleX(-1); }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
-        
         #static-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; justify-content: center; align-items: center; z-index: 5; }
         #static-overlay img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* 底部可视化命名框 */
         #naming-box { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.95); padding: 20px; border-radius: 20px; border: 2px solid var(--warning); display: none; z-index: 100; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         #naming-box input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #444; margin-bottom: 15px; font-size: 16px; text-align: center; background: #222; color: white; }
 
@@ -29,7 +26,6 @@
         
         .admin-wrap { position: absolute; top: 15px; right: 20px; z-index: 100; }
         .lock-btn { cursor: pointer; font-size: 20px; opacity: 0.5; }
-
         .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 8px; color: white; display: flex; align-items: center; justify-content: center; }
         .btn-reg { background: var(--accent); }
         .btn-checkin { background: var(--success); }
@@ -44,24 +40,21 @@
         .log-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
         .del-btn { color: var(--danger); cursor: pointer; font-size: 20px; font-weight: bold; margin-left: 10px; }
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: none; justify-content: center; align-items: center; }
         .modal { background: #1e1e1e; padding: 25px; border-radius: 24px; width: 90%; max-width: 380px; }
         .modal input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #333; background: #222; color: white; box-sizing: border-box; }
-
-        /* 版本号样式 */
+        .list-container { max-height: 300px; overflow-y: auto; border: 1px solid #333; border-radius: 10px; margin: 10px 0; }
+        .list-item { padding: 12px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         .version-tag { position: fixed; bottom: 10px; left: 20px; font-size: 10px; color: rgba(255,255,255,0.3); z-index: 100; pointer-events: none; }
     </style>
 </head>
 <body>
 
-<div id="loader"><div style="font-size: 24px;">🤖 AI 视觉引擎初始化中...</div></div>
+<div id="loader"><div style="font-size: 24px;">🤖 正在启动 AI 视觉系统...</div></div>
+<div class="version-tag">Version 1.0.2</div>
 
 <input type="file" id="face-import-input" accept=".json" style="display:none">
 <input type="file" id="image-upload-input" accept="image/*" style="display:none">
-
-<!-- 1.0.1 版本标签 -->
-<div class="version-tag">Version 1.0.1</div>
 
 <div id="display-wrapper">
     <video id="video" autoplay muted playsinline></video>
@@ -70,7 +63,7 @@
 
     <div id="naming-box">
         <div id="naming-info" style="color:var(--warning); font-size:14px; font-weight:bold; margin-bottom:10px;">正在处理人脸</div>
-        <input type="text" id="custom-name-input" placeholder="输入姓名...">
+        <input type="text" id="custom-name-input" placeholder="输入姓名保存...">
         <div style="display:flex; gap:10px;">
             <button onclick="confirmNaming()" style="flex:1; padding:10px; background:var(--success); border:none; border-radius:8px; color:white; font-weight:bold;">确认保存</button>
             <button onclick="cancelNaming()" style="flex:1; padding:10px; background:#444; border:none; border-radius:8px; color:white;">取消</button>
@@ -82,11 +75,11 @@
     <div class="card">
         <h3>📸 档案中心</h3>
         <button class="btn btn-reg" onclick="registerFace()">📸 实时捕获录入</button>
-        <button class="btn btn-fix btn-admin" onclick="fixRecognition()">🔧 纠正当前识别</button>
-        <button class="btn btn-outline" onclick="document.getElementById('image-upload-input').click()">🖼️ 从合照批量导入</button>
-        <button class="btn btn-admin btn-outline" style="border-color:var(--primary); color:var(--primary);" onclick="openProfileManager()">👥 管理档案名单</button>
+        <button class="btn btn-fix btn-admin" style="display:none;" onclick="fixRecognition()">🔧 纠正当前识别</button>
+        <button class="btn btn-outline" onclick="document.getElementById('image-upload-input').click()">🖼️ 合照批量导入</button>
+        <button class="btn btn-admin btn-outline" style="border-color:var(--primary); color:var(--primary); display:none;" onclick="openProfileManager()">👥 管理档案名单</button>
         
-        <div class="btn-admin" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap:5px;">
+        <div class="btn-admin" style="display:none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #333; gap:5px;">
             <button class="btn btn-outline" style="flex:1; font-size:11px;" onclick="exportFaceProfiles()">📤 导出</button>
             <button class="btn btn-outline" style="flex:1; font-size:11px;" onclick="document.getElementById('face-import-input').click()">📥 导入</button>
         </div>
@@ -103,7 +96,7 @@
             <div id="tag-container" style="display:contents"></div>
             <input type="text" id="name-input" placeholder="输入姓名或识别..." autocomplete="off">
         </div>
-        <button class="btn btn-admin" style="background:var(--primary); font-size:11px;" onclick="exportAttendanceCSV()">📊 导出今日报表</button>
+        <button class="btn btn-admin" style="background:var(--primary); font-size:11px; display:none;" onclick="exportAttendanceCSV()">📊 导出今日报表</button>
     </div>
 
     <div class="card">
@@ -117,7 +110,7 @@
 </div>
 
 <div class="modal-overlay" id="login-modal"><div class="modal"><h3>管理员登录</h3><input type="text" id="admin-user" placeholder="用户名"><input type="password" id="admin-pass" placeholder="密码"><button class="btn btn-primary" onclick="performLogin()">登录</button><button class="btn" style="background:none;" onclick="closeModal('login-modal')">取消</button></div></div>
-<div class="modal-overlay" id="profile-modal"><div class="modal" style="max-width:450px;"><h3>已录入档案</h3><div id="profile-list-content" style="max-height:300px; overflow-y:auto; border:1px solid #333; border-radius:10px; margin:10px 0;"></div><button class="btn btn-checkin" onclick="closeModal('profile-modal')">关闭</button></div></div>
+<div class="modal-overlay" id="profile-modal"><div class="modal" style="max-width:450px;"><h3>档案名单</h3><div id="profile-list-content" style="max-height:300px; overflow-y:auto; border:1px solid #333; border-radius:10px; margin:10px 0;"></div><button class="btn btn-checkin" onclick="closeModal('profile-modal')">关闭</button></div></div>
 
 <script>
     const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
@@ -149,37 +142,41 @@
         renderHistory();
     }
 
-    function performLogin() {
-        const u = document.getElementById('admin-user').value;
-        const p = document.getElementById('admin-pass').value;
-        if(u === "admin" && p === "8181") {
-            isAdmin = true;
-            document.getElementById('lock-icon').innerHTML = "🔓";
-            document.getElementById('logout-btn').style.display = "inline";
-            document.querySelectorAll('.btn-admin').forEach(el => el.style.display = "flex");
-            closeModal('login-modal');
-            renderHistory();
-            alert("管理员登录成功");
-        } else alert("账号或密码错误");
+    // --- 核心修复：导入逻辑 ---
+    document.getElementById('face-import-input').onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if (confirm("载入新档案将覆盖当前所有名单，确定吗？")) {
+                    // 深度同步：确保 names 和 faces 同时更新
+                    state.faces = data.faces || data.faceData || [];
+                    state.names = data.names || [...new Set(state.faces.map(f => f.name))];
+                    state.history = data.history || [];
+                    
+                    // 保存到本地
+                    saveData();
+                    // 强制 AI 重新学习
+                    updateFaceMatcher();
+                    alert("✅ 档案同步成功！管理名单已更新。");
+                    location.reload(); 
+                }
+            } catch (err) { alert("格式错误！"); }
+        };
+        reader.readAsText(file);
+    };
+
+    function updateFaceMatcher() {
+        if (!state.faces || state.faces.length === 0) { faceMatcher = null; return; }
+        const labeledDescriptors = state.faces.map(f => {
+            return new faceapi.LabeledFaceDescriptors(f.name, [new Float32Array(f.descriptor)]);
+        });
+        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.4);
     }
 
-    function performLogout() {
-        isAdmin = false;
-        document.getElementById('lock-icon').innerHTML = "🔒";
-        document.getElementById('logout-btn').style.display = "none";
-        document.querySelectorAll('.btn-admin').forEach(el => el.style.display = "none");
-        renderHistory();
-    }
-
-    function deleteLog(originalIdx) {
-        if(!isAdmin) return alert("请登入管理员");
-        if(confirm("确定删除记录？")) {
-            state.history.splice(originalIdx, 1);
-            saveData();
-            renderHistory();
-        }
-    }
-
+    // --- 视觉绘制与识别 ---
     function startLiveRecognition() {
         const video = document.getElementById('video');
         const canvas = document.getElementById('overlay-canvas');
@@ -199,8 +196,7 @@
                     const match = faceMatcher.findBestMatch(det.descriptor);
                     if (match.label !== 'unknown') {
                         name = match.label;
-                        const today = new Date().toLocaleDateString('zh-CN');
-                        isSigned = state.history.some(h => h.name.toLowerCase() === name.toLowerCase() && h.date === today);
+                        isSigned = state.history.some(h => h.name.toLowerCase() === name.toLowerCase() && h.date === new Date().toLocaleDateString('zh-CN'));
                         color = isSigned ? "#2ed573" : "#007bff";
                         if (!isSigned) autoCheckIn(name);
                     }
@@ -220,10 +216,46 @@
         }, 400);
     }
 
+    // --- 业务功能 ---
+    async function registerFace() {
+        const video = document.getElementById('video');
+        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+        if (det) {
+            const name = prompt("请输入姓名:");
+            if (name) {
+                state.faces = state.faces.filter(f => f.name.toLowerCase() !== name.toLowerCase());
+                state.faces.push({ name, descriptor: Array.from(det.descriptor) });
+                if(!state.names.some(n=>n.toLowerCase()===name.toLowerCase())) state.names.push(name);
+                saveData(); updateFaceMatcher(); alert("录入成功");
+            }
+        } else alert("未见人脸");
+    }
+
+    async function fixRecognition() {
+        if(!isAdmin) return openLoginModal();
+        const video = document.getElementById('video');
+        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+        if (!det) return alert("未见人脸");
+        isFrozen = true; currentWorkDescriptor = Array.from(det.descriptor);
+        document.getElementById('naming-info').innerText = "🔧 纠错模式：请更新该人员姓名";
+        document.getElementById('naming-box').style.display = 'block';
+    }
+
+    function confirmNaming() {
+        const name = document.getElementById('custom-name-input').value.trim();
+        if (name) {
+            state.faces = state.faces.filter(f => f.name.toLowerCase() !== name.toLowerCase());
+            state.faces.push({ name: name, descriptor: currentWorkDescriptor });
+            if (!state.names.some(n => n.toLowerCase() === name.toLowerCase())) state.names.push(name);
+            saveData(); updateFaceMatcher();
+        }
+        cancelNaming();
+    }
+
     function submitManualCheckIn() {
         const input = document.getElementById('name-input');
         if (input.value.trim()) state.selected.add(input.value.trim());
-        if (state.selected.size === 0) return alert("请先录入姓名");
+        if (!state.selected.size) return alert("请选人");
         const today = new Date().toLocaleDateString('zh-CN');
         const signedTodayLower = state.history.filter(h => h.date === today).map(h => h.name.toLowerCase());
         let added = false, dups = [];
@@ -235,55 +267,43 @@
                 added = true;
             }
         });
-        if (dups.length > 0) alert(`⚠️ ${dups.join(', ')} 今天已签过`);
+        if (dups.length > 0) alert(`⚠️ 重复签到`);
         if (added) { saveData(); renderHistory(); confetti({ particleCount: 100 }); }
         state.selected.clear(); input.value = ''; refreshTags();
     }
 
-    async function registerFace() {
-        const video = document.getElementById('video');
-        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-        if (!det) return alert("未见脸部");
-        isFrozen = true; currentWorkDescriptor = Array.from(det.descriptor);
-        document.getElementById('naming-info').innerText = "📸 实时录入";
-        document.getElementById('naming-box').style.display = 'block';
+    function performLogin() {
+        if(document.getElementById('admin-user').value==="admin" && document.getElementById('admin-pass').value==="8181") {
+            isAdmin = true;
+            document.getElementById('lock-icon').innerHTML = "🔓";
+            document.querySelectorAll('.btn-admin').forEach(e => e.style.display="flex");
+            document.getElementById('logout-btn').style.display="inline";
+            closeModal('login-modal'); renderHistory();
+        } else alert("密码错误");
     }
-    async function fixRecognition() {
-        if(!isAdmin) return openLoginModal();
-        const video = document.getElementById('video');
-        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-        if (!det) return alert("未见脸部");
-        isFrozen = true; currentWorkDescriptor = Array.from(det.descriptor);
-        document.getElementById('naming-info').innerText = "🔧 纠正当前识别";
-        document.getElementById('naming-box').style.display = 'block';
-    }
-    function confirmNaming() {
-        const name = document.getElementById('custom-name-input').value.trim();
-        if (name) {
-            state.faces = state.faces.filter(f => f.name.toLowerCase() !== name.toLowerCase());
-            state.faces.push({ name: name, descriptor: currentWorkDescriptor });
-            if (!state.names.some(n => n.toLowerCase() === name.toLowerCase())) state.names.push(name);
-            saveData(); updateFaceMatcher();
-        }
-        cancelNaming();
-    }
-    function cancelNaming() { isFrozen=false; currentWorkDescriptor=null; document.getElementById('naming-box').style.display='none'; document.getElementById('static-overlay').style.display='none'; document.getElementById('overlay-canvas').getContext('2d').clearRect(0,0,2000,2000); }
+
+    function performLogout() { isAdmin = false; document.getElementById('lock-icon').innerHTML = "🔒"; document.getElementById('logout-btn').style.display = "none"; document.querySelectorAll('.btn-admin').forEach(e => e.style.display = "none"); renderHistory(); }
     function saveData() { localStorage.setItem('ai_names', JSON.stringify(state.names)); localStorage.setItem('ai_history', JSON.stringify(state.history)); localStorage.setItem('ai_face_data', JSON.stringify(state.faces)); }
-    function updateFaceMatcher() { if (!state.faces.length) return faceMatcher = null; const labeled = state.faces.map(f => new faceapi.LabeledFaceDescriptors(f.name, [new Float32Array(f.descriptor)])); faceMatcher = new faceapi.FaceMatcher(labeled, 0.4); }
     function renderHistory() {
         const today = new Date().toLocaleDateString('zh-CN');
         const data = state.history.map((h, i) => ({...h, originalIdx: i})).filter(h => h.date === today);
         document.getElementById('history-list').innerHTML = data.map(h => `<div class="log-item"><span><b>${h.name}</b></span><div><small>${h.time}</small> ${isAdmin ? `<span onclick="deleteLog(${h.originalIdx})" style="color:red; cursor:pointer; margin-left:10px;">×</span>` : ''}</div></div>`).join('');
-        document.getElementById('today-count').innerText = `共 ${data.length} 人`; document.getElementById('today-date').innerText = today;
+        document.getElementById('today-count').innerText = `共 ${data.length} 人`;
     }
+    function deleteLog(i) { state.history.splice(i,1); saveData(); renderHistory(); }
     function refreshTags() { document.getElementById('tag-container').innerHTML = Array.from(state.selected).map(n => `<div class="tag">${n} <span onclick="state.selected.delete('${n}');refreshTags();" style="cursor:pointer;margin-left:5px">×</span></div>`).join(''); document.getElementById('submit-btn').innerText = `确认提交签到 (${state.selected.size}人)`; }
     function autoCheckIn(n) { state.history.unshift({ name:n, date: new Date().toLocaleDateString('zh-CN'), time: new Date().toLocaleTimeString().substring(0,5), mood: "🤖" }); saveData(); renderHistory(); }
-    function exportFaceProfiles() { const b = new Blob([JSON.stringify(state)], {type:'application/json'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`AI_Backup_v101.json`; a.click(); }
-    function exportAttendanceCSV() { const groups = {}; state.history.forEach(h => { if(!groups[h.date]) groups[h.date]=[]; groups[h.date].push(h.name); }); let csv = "\ufeff日期,人数,名单\n"; Object.keys(groups).sort((a,b)=>new Date(b)-new Date(a)).forEach(d => { csv += `${d},${groups[d].length}人,"${groups[d].join('; ')}"\n`; }); const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Report_v101.csv`; a.click(); }
-    function openProfileManager() { document.getElementById('profile-list-content').innerHTML = state.faces.map(f => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #333;"><span>👤 ${f.name}</span><button onclick="deleteProfile('${f.name}')" style="color:red; border:none; background:none;">删除</button></div>`).join('') || '<p>空</p>'; document.getElementById('profile-modal').style.display = 'flex'; }
-    function deleteProfile(n) { if(confirm(`删除 ${n}?`)) { state.faces=state.faces.filter(f=>f.name!==n); saveData(); updateFaceMatcher(); openProfileManager(); } }
-    function openLoginModal() { document.getElementById('login-modal').style.display='flex'; }
+    function openProfileManager() {
+        const cont = document.getElementById('profile-list-content');
+        cont.innerHTML = state.faces.map(f => `<div class="list-item"><span>👤 <b>${f.name}</b></span><button onclick="deleteProfile('${f.name}')" style="color:red; background:none; border:none;">删除</button></div>`).join('') || '<p>无</p>';
+        document.getElementById('profile-modal').style.display = 'flex';
+    }
+    function deleteProfile(n) { if(confirm(`彻底删除 ${n}?`)) { state.faces=state.faces.filter(f=>f.name!==n); saveData(); updateFaceMatcher(); openProfileManager(); } }
+    function exportFaceProfiles() { const b = new Blob([JSON.stringify(state)], {type:'application/json'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`Sign_Backup_v102.json`; a.click(); }
+    function exportAttendanceCSV() { const groups = {}; state.history.forEach(h => { if(!groups[h.date]) groups[h.date]=[]; groups[h.date].push(h.name); }); let csv = "\ufeff日期,人数,名单\n"; Object.keys(groups).sort((a,b)=>new Date(b)-new Date(a)).forEach(d => { csv += `${d},${groups[d].length}人,"${groups[d].join('; ')}"\n`; }); const b = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`Sign_Report.csv`; a.click(); }
     function closeModal(id) { document.getElementById(id).style.display='none'; }
+    function openLoginModal() { document.getElementById('login-modal').style.display='flex'; }
+    function cancelNaming() { isFrozen=false; currentWorkDescriptor=null; document.getElementById('naming-box').style.display='none'; document.getElementById('static-overlay').style.display='none'; document.getElementById('overlay-canvas').getContext('2d').clearRect(0,0,2000,2000); }
 
     window.onload = init;
 </script>
